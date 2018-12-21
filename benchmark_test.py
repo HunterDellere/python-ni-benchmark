@@ -4,6 +4,7 @@ import xlsxwriter
 import datetime
 import os.path
 
+
 def single_method_benchmark(session, method_to_test, trials):
     session.open()
     results = []
@@ -20,6 +21,7 @@ def single_method_benchmark(session, method_to_test, trials):
     session.close()
     return results
 
+
 def open_benchmark(session, trials):
     start_time = time.perf_counter()
     session.open()
@@ -28,6 +30,7 @@ def open_benchmark(session, trials):
     elapsed_time = end_time - start_time
     return elapsed_time
 
+
 def close_benchmark(session, trials):
     session.open()
     start_time = time.perf_counter()
@@ -35,6 +38,7 @@ def close_benchmark(session, trials):
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     return elapsed_time
+
 
 # ------------- LOGGING SETUP --------------
 

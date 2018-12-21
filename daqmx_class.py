@@ -18,20 +18,20 @@ class DaqmxSession:
 
     # ------ BENCHMARK TESTS --------
 
-    def read_std(self): # Not to be confused with stream reader reads, which are supposedly faster.
+    def read_std(self):  # Not to be confused with stream reader reads, which are supposedly faster.
         self.data = self.task.read(100)
 
 #    def write)std(self):
 #        self.data = self.task.write(100)
-  # --------------------------------
+# --------------------------------
 
 # Testing methods....
 
-#testsesh = DaqmxSession()
-#print(testsesh.chan)
-#print(testsesh.physchan)
-#testsesh.open()
-#testsesh.read_std()
-#print(testsesh.data)
-#time.sleep(5)
-#testsesh.close()
+# testsesh = DaqmxSession()
+# print(testsesh.chan)
+# print(testsesh.physchan)
+# testsesh.open()
+# testsesh.read_std()
+# print(testsesh.data)
+# time.sleep(5)
+# testsesh.close()
