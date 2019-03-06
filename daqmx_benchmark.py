@@ -1,40 +1,52 @@
-from daqmx_session import DAQmxSession
 import time
 import sys
-import pandas as pd
-import xlsxwriter
-import os.path
-import datetime
+from pandas import DataFrame as df
 
+from daqmx_session import DAQmxSession
 
-def benchmark(session, method, device, channel, samples, trials):
-    results = []
-
-    for trial in range(trials):
-        t_start = time.perf_counter()
-        method(device, channel, samples, trial)
-        t_end = time.perf_counter()
-        t_elapsed = t_end - t_start
-        sys.stdout.write("Trial Progress: %d of %d   \r" % (trial, trials))
-        sys.stdout.flush()
-        time.sleep(.100)
-        results.append([trial, t_elapsed])
-
-    session.close()
-    print(results)
-
-
-'''
-The following section of code configures and executes benchmarking
-'''
-
-print("Starting...")
 # Configure Testing Parameters Here
 samples = 1000
 trials = 100
 device = 'Dev1'
 channel = 'ai1'
+clk_src = 'OnboardClock'
+benchmark_method = 'analog_input'
+
+
+# Main benchmark function
+def benchmark(session, method, device, channel, samples, trials, clk_src):
+    results = []
+
+    for trial in range(trials):
+        sys.stdout.write("Trial Progress: %d of %d   \r" % (trial+1, trials))
+        sys.stdout.flush()  # Progress indicator
+        t_start = time.perf_counter()
+        method(device, channel, samples, trial, clk_src)  # Calls target method
+        t_end = time.perf_counter()
+        t_elapsed = t_end - t_start
+        results.append(t_elapsed)
+
+    session.close()
+
+    # Follow code is for console display until print statement
+    sys.stdout.write("\n\n")  # Formatting
+    data = df(results, columns=['Time'])  # Full results
+    stats = data.Time.describe().reindex()  # Statistics of runs
+    print(stats.to_csv(header=False, sep='\t'))
+
+
+'''
+
+MAIN FUNCTION
+
+The following section of code configures and executes benchmarking function
+with the configured parameters
+
+'''
+
+print("Starting...")
 
 # Begin Benchmark Section
 session = DAQmxSession()
-benchmark(session, session.analog_input, device, channel, samples, trials)
+benchmark(session, eval('session.' + benchmark_method),
+          device, channel, samples, trials, clk_src)
