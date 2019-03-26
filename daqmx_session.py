@@ -24,8 +24,6 @@ class DAQmxSession:
             "do": "self.task.do_channels.add_do_chan(self.physical_channel)"
         }
         eval(self.methods[method])
-        # Add DAQmx Start Task here so that first
-        # iteration does not have to auto-start, skewing the results.
 
     def close(self):
         self.task.close()
@@ -56,31 +54,33 @@ class DAQmxSession:
             self.configure(device, channel)
             self.open("ao")
             self.task.timing.cfg_samp_clk_timing(rate, clk_src)
-            self.task.write(random_analog, auto_start=True)
+            self.task.wait_until_done(self.task.write(random_analog, auto_start=True))
             self.task.stop()
 
         else:
-            self.task.write(random_analog, auto_start=True)
+            self.task.wait_until_done(self.task.write(random_analog, auto_start=True))
             self.task.stop()
 
     def digital_input(self, device, channel,
-                      samples, trial=0, clk_src='', rate=''):
+                      samples, trial=0, clk_src='', rate=10000):
         # On the first trial we do configure and open
         if trial == 0:
             self.configure(device, channel)
             self.open("di")
-            self.data = self.task.read(samples)
+            self.task.timing.cfg_samp_clk_timing(rate)
+            self.data = self.task.read(samples, timeout=-1)
 
         else:
-            self.data = self.task.read(samples)
+            self.data = self.task.read(samples, timeout=-1)
 
     def digital_output(self, device, channel,
-                       samples, trial=0, clk_src='', rate=''):
+                       samples, trial=0, clk_src='', rate=10000):
         # On the first trial we do configure and open
         if trial == 0:
             self.configure(device, channel)
             self.open("do")
-            self.task.write(random_digital, auto_start=True)
+            self.task.timing.cfg_samp_clk_timing(rate)
+            self.task.write(random_digital, auto_start=True, timeout=-1)
 
         else:
-            self.task.write(random_digital, auto_start=True)
+            self.task.write(random_digital, auto_start=True, timeout=-1)

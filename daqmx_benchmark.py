@@ -1,5 +1,6 @@
 import time
 import sys
+import pandas as pd
 from pandas import DataFrame as df
 
 from daqmx_session import DAQmxSession
@@ -8,9 +9,9 @@ from daqmx_session import DAQmxSession
 samples = 1000  # samples per trial
 trials = 1000
 device = 'Dev1'  # device alias as listed in NI MAX
-channel = 'ai1'  # for digital tasks use 'port#/line#', for analog 'ao# or ai#'
+channel = 'port0/line0'  # for digital tasks use 'port#/line#', for analog 'ao# or ai#'
 clk_src = 'OnboardClock'  # can accept a physical channel
-benchmark_method = 'analog_input'  # methods listed in daqmx_session.py
+benchmark_method = 'digital_output'  # methods listed in daqmx_session.py
 generate_report = True
 device_model = "USB-6363"  # for documentation only
 
@@ -18,6 +19,7 @@ device_model = "USB-6363"  # for documentation only
 # Main benchmark function
 def benchmark(session, method, device, channel, samples, trials, clk_src):
     results = []
+    trials += 1  # Allows us to remove the first point which is cfg
 
     for trial in range(trials):
         sys.stdout.write("Trial Progress: %d of %d   \r" % (trial+1, trials))
@@ -29,17 +31,19 @@ def benchmark(session, method, device, channel, samples, trials, clk_src):
         results.append(t_elapsed)
 
     session.close()
-
+    # print(results[0])  # Uncomment to see first iteration time
+    results_no_cfg = results[1:]
     # Follow code is for console display until print statement
     sys.stdout.write("\n\n")  # Formatting
-    data = df(results, columns=['Time'])  # Full results
+    data = df(results_no_cfg, columns=['Time'])  # Full results
     stats = data.Time.describe()  # Statistics of runs
     print(stats.to_csv(header=False, sep='\t'))
 
     # Generate report, can be made a separate script later if desired
     if generate_report:
-        stats.to_excel(device_model + '_' + benchmark_method + '.xlsx',
-                       header=False, index=True)
+        with pd.ExcelWriter(device_model + '_' + benchmark_method + '.xlsx') as writer:
+            stats.to_excel(writer, sheet_name='Benchmark Stats')
+            data.to_excel(writer, sheet_name='Raw Benchmark Data')
 
 
 '''
