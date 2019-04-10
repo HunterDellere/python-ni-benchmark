@@ -6,12 +6,12 @@ from pandas import DataFrame as df
 from daqmx_session import DAQmxSession
 
 # Configure Testing Parameters Here
-samples = 1000  # samples per trial
-trials = 1000
+samples = 10000  # samples per trial
+trials = 100
 device = 'Dev1'  # device alias as listed in NI MAX
-channel = 'port0/line0'  # for digital tasks use 'port#/line#', for analog 'ao# or ai#'
+channel = 'ao1'  # for digital tasks use 'port#/line#', for analog 'ao# or ai#'
 clk_src = 'OnboardClock'  # can accept a physical channel
-benchmark_method = 'digital_output'  # methods listed in daqmx_session.py
+benchmark_method = 'analog_output'  # methods listed in daqmx_session.py
 generate_report = True
 device_model = "USB-6363"  # for documentation only
 
@@ -30,7 +30,7 @@ def benchmark(session, method, device, channel, samples, trials, clk_src):
         t_elapsed = t_end - t_start
         results.append(t_elapsed)
 
-    session.close()
+    session.close()  # Close DAQ Session
     # print(results[0])  # Uncomment to see first iteration time
     results_no_cfg = results[1:]
     # Follow code is for console display until print statement
